@@ -1,0 +1,31 @@
+<template>
+  <DataTablePage
+    title="Courses"
+    subtitle="Courses table from database"
+    fetch-url="/api/courses"
+    :columns="courseColumns"
+    :page-sizes="[10, 25, 50, 100]"
+    :per-page="25"
+  />
+</template>
+
+<script setup>
+import DataTablePage from '../components/DataTablePage.vue';
+
+const courseColumns = [
+  { key: 'CourseID', label: 'ID', sortable: true, width: '80px' },
+  { key: 'CourseCode', label: 'Course Code', sortable: true, width: '120px' },
+  { key: 'Description', label: 'Description', sortable: true, width: '200px' },
+  { key: 'Units', label: 'Units', sortable: true, width: '80px' },
+  { key: 'LectureUnits', label: 'Lecture Units', sortable: true, width: '110px' },
+  { key: 'LectureHours', label: 'Lecture Hours', sortable: true, width: '110px' },
+  { key: 'LaboratoryHours', label: 'Lab Hours', sortable: true, width: '100px' },
+  { key: 'LaboratoryUnits', label: 'Lab Units', sortable: true, width: '90px' },
+  { key: 'CourseTypeID', label: 'Course Type', sortable: true, width: '100px' },
+  { key: 'SchoolFeeTypeID', label: 'School Fee Type', sortable: true, width: '130px' },
+  { key: 'CampusID', label: 'Campus ID', sortable: true, width: '90px' },
+  { key: 'campus_name', label: 'Campus Name', sortable: true, width: '140px' },
+  { key: 'status', label: 'Status', sortable: true, width: '100px' },
+  { key: 'created_at', label: 'Created', sortable: true, width: '160px' },
+];
+</script>

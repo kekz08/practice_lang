@@ -7,14 +7,12 @@ use Illuminate\Http\Request;
 
 class ClasseController extends Controller
 {
-    /**
-     * Display a listing of classes (JSON for SimpleTable / API).
-     */
+
     public function index(Request $request)
     {
         $query = Classe::query();
 
-        // Search
+
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('ClassCode', 'like', "%{$search}%")
@@ -25,7 +23,7 @@ class ClasseController extends Controller
             });
         }
 
-        // Sort
+
         $sort = $request->input('sort', 'ClassID');
         $order = $request->input('order', 'asc');
         if (in_array(strtolower($order), ['asc', 'desc'])) {
