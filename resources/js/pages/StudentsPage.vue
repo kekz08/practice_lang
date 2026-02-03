@@ -4,8 +4,8 @@
     subtitle="Students table from database"
     fetch-url="/api/students"
     :columns="studentColumns"
-    :page-sizes="[10, 25, 50, 100]"
-    :per-page="25"
+    :page-sizes="[100, 200, 500, 1000]"
+    :per-page="100"
     >
       <template #cell-status="{ row }">
   <span
@@ -23,7 +23,7 @@
 import DataTablePage from '../components/DataTablePage.vue';
 
 const studentColumns = [
-  { key: 'StudentID', label: 'ID', sortable: true, width: '80px' },
+  { key: '#', label: 'ID', sortable: true, width: '80px', autonumber: true, },
   { key: 'StudentYear', label: 'Year', sortable: true, width: '80px' },
   { key: 'FirstName', label: 'First Name', sortable: true, width: '120px' },
   { key: 'MiddleName', label: 'Middle Name', sortable: true, width: '120px' },

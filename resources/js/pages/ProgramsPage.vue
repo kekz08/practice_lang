@@ -4,8 +4,8 @@
         subtitle="Classes table from database"
         fetch-url="/api/programs"
         :columns="columns"
-        :page-sizes="[10, 20, 50, 100]"
-        :per-page="10"
+        :page-sizes="[100, 200, 500, 1000]"
+        :per-page="100"
     />
 </template>
 
@@ -13,7 +13,7 @@
 import DataTablePage from '../components/DataTablePage.vue';
 
 const columns = [
-    { key: 'ProgramID', label: 'ID', sortable: true, width: '80px' },
+    { key: '#', label: 'ID', sortable: true, width: '80px', autonumber: true, },
     { key: 'ProgramCode', label: 'Program Code', sortable: true, width: '100px' },
     { key: 'ProgramName', label: 'Program Name', sortable: true, width: '90px' },
     { key: 'UnitID', label: 'Unit ID', sortable: true, width: '90px' },

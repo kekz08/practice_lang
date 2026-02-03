@@ -31,7 +31,6 @@ class ClasseController extends Controller
         }
 
         $perPage = (int) $request->input('per_page', 10);
-        $perPage = min(max($perPage, 1), 100);
 
         return response()->json($query->paginate($perPage));
     }

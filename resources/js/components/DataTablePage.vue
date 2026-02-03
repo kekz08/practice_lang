@@ -30,7 +30,7 @@ defineProps({
   subtitle: { type: String, default: '' },
   fetchUrl: { type: String, required: true },
   columns: { type: Array, required: true },
-  pageSizes: { type: Array, default: () => [10, 25, 50, 100] },
-  perPage: { type: Number, default: 25 },
+  pageSizes: { type: Array, default: () => [100, 200, 500, 1000] },
+  perPage: { type: Number, default: 100 },
 });
 </script>
