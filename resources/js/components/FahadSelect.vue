@@ -13,6 +13,7 @@
             optionHoverColor="#2196f3"
             optionSelectedColor="#1976d2"
             v-bind="$attrs"
+            @triggerChange="onTriggerChange"
         />
     </div>
 </template>
@@ -22,19 +23,27 @@ import { ref } from 'vue';
 import FahadSelectInput from 'fahad-select';
 import 'fahad-select/dist/style.css';
 
-defineProps({
+const props = defineProps({
     title: { type: String, default: '' },
     subtitle: { type: String, default: '' },
-    searchRoute: { type: String, default: '/api/users' }
+    searchRoute: { type: String, default: '/api/users' },
+    /** Optional: called when selection changes (selectedValue) => {} */
+    callback: { type: Function, default: null },
 });
+
+const emit = defineEmits(['triggerChange']);
 
 const selected = ref(null);
 const selectRef = ref(null);
 
-// Optional parameters to send along with the API request
-const optionalParams = { key: 'value' };
+const onTriggerChange = (selectedValue) => {
+    emit('triggerChange', selectedValue);
+    if (typeof props.callback === 'function') {
+        props.callback(selectedValue);
+    }
+};
 
-// Reload the select normally used for cascaded select
+// Reload the select (e.g. for cascaded selects)
 const reloadSelect = () => {
     if (selectRef.value) {
         selectRef.value.reload();
@@ -43,6 +52,6 @@ const reloadSelect = () => {
 
 defineExpose({
     reload: reloadSelect,
-    selected
+    selected,
 });
 </script>

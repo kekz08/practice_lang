@@ -12,8 +12,12 @@ class ClasseController extends Controller
     {
         $query = Classe::query();
 
+        if ($request->filled('ClassID')) {
+            $query->where('ClassID', $request->input('ClassID'));
+        }
 
-        if ($search = $request->input('search')) {
+        $search = $request->input('search') ?? $request->input('query_');
+        if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('ClassCode', 'like', "%{$search}%")
                     ->orWhere('SectionCode', 'like', "%{$search}%")
@@ -23,11 +27,18 @@ class ClasseController extends Controller
             });
         }
 
-
         $sort = $request->input('sort', 'ClassID');
         $order = $request->input('order', 'asc');
         if (in_array(strtolower($order), ['asc', 'desc'])) {
             $query->orderBy($sort, $order);
+        }
+
+        // fahad-select expects { results: [ { id, label } ] }
+        if ($request->has('query_')) {
+            $items = $query->limit(100)->get();
+            $results = $items->map(fn ($row) => ['id' => $row->ClassID, 'label' => $row->ClassCode]);
+
+            return response()->json(['results' => $results]);
         }
 
         $perPage = (int) $request->input('per_page', 10);

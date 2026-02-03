@@ -1,26 +1,42 @@
 <template>
-  <DataTablePage
-    title="Students"
-    subtitle="Students table from database"
-    fetch-url="/api/students"
-    :columns="studentColumns"
-    :page-sizes="[100, 200, 500, 1000]"
-    :per-page="100"
+  <div class="space-y-6">
+    <FahadSelect search-route="/api/students" @trigger-change="onStudentSelect" />
+    <DataTablePage
+      title="Students"
+      subtitle="Students table from database"
+      fetch-url="/api/students"
+      :columns="studentColumns"
+      :page-sizes="[100, 200, 500, 1000]"
+      :per-page="100"
+      :query-params="tableQueryParams"
     >
       <template #cell-status="{ row }">
-  <span
-      :class="statusClass(row.status)"
-      class="font-semibold capitalize"
-  >
-    {{ row.status }}
-  </span>
+        <span
+          :class="statusClass(row.status)"
+          class="font-semibold capitalize"
+        >
+          {{ row.status }}
+        </span>
       </template>
-
-  </DataTablePage>
+    </DataTablePage>
+  </div>
 </template>
 
 <script setup>
+import { ref, computed } from 'vue';
 import DataTablePage from '../components/DataTablePage.vue';
+import FahadSelect from '../components/FahadSelect.vue';
+
+const selectedStudentId = ref(null);
+
+const onStudentSelect = (selected) => {
+  selectedStudentId.value = selected?.id ?? null;
+};
+
+const tableQueryParams = computed(() => {
+  if (selectedStudentId.value == null) return {};
+  return { StudentID: selectedStudentId.value };
+});
 
 const studentColumns = [
   { key: '#', label: 'ID', sortable: true, width: '80px', autonumber: true, },

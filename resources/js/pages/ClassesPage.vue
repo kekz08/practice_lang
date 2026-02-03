@@ -1,16 +1,36 @@
 <template>
-  <DataTablePage
-    title="Classes"
-    subtitle="Classes table from database"
-    fetch-url="/api/classes"
-    :columns="columns"
-    :page-sizes="[100, 200, 500, 1000]"
-    :per-page="100"
-  />
+  <div class="space-y-6">
+    <FahadSelect
+      search-route="/api/classes"
+      @trigger-change="onClassSelect"
+    />
+    <DataTablePage
+      title="Classes"
+      subtitle="Classes table from database"
+      fetch-url="/api/classes"
+      :columns="columns"
+      :page-sizes="[100, 200, 500, 1000]"
+      :per-page="100"
+      :query-params="tableQueryParams"
+    />
+  </div>
 </template>
 
 <script setup>
+import { ref, computed } from 'vue';
 import DataTablePage from '../components/DataTablePage.vue';
+import FahadSelect from '../components/FahadSelect.vue';
+
+const selectedClassId = ref(null);
+
+const onClassSelect = (selected) => {
+  selectedClassId.value = selected?.id ?? null;
+};
+
+const tableQueryParams = computed(() => {
+  if (selectedClassId.value == null) return {};
+  return { ClassID: selectedClassId.value };
+});
 
 const columns = [
   { key: 'ClassID', label: 'ID', sortable: true, width: '80px' },

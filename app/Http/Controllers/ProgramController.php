@@ -11,7 +11,12 @@ class ProgramController extends Controller
     {
         $query = Program::query();
 
-        if ($search = $request->input('search')) {
+        if ($request->filled('ProgramID')) {
+            $query->where('ProgramID', $request->input('ProgramID'));
+        }
+
+        $search = $request->input('search') ?? $request->input('query_');
+        if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('ProgramID', 'like', "%{$search}%")
                     ->orWhere('ProgramCode', 'like', "%{$search}%")
@@ -25,6 +30,14 @@ class ProgramController extends Controller
         $order = $request->input('order', 'asc');
         if (in_array(strtolower($order), ['asc', 'desc'])) {
             $query->orderBy($sort, $order);
+        }
+
+        // fahad-select expects { results: [ { id, label } ] }
+        if ($request->has('query_')) {
+            $items = $query->limit(100)->get();
+            $results = $items->map(fn ($row) => ['id' => $row->ProgramID, 'label' => $row->ProgramName ?? $row->ProgramCode]);
+
+            return response()->json(['results' => $results]);
         }
 
         $perPage = (int) $request->input('per_page', 10);

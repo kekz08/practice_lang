@@ -10,6 +10,7 @@
       :columns="columns"
       :page-sizes="pageSizes"
       :per-page="perPage"
+      :query-params="queryParams"
       searchable
       odd-row-color="bg-white dark:bg-[#161615]"
       even-row-color="bg-stone-50 dark:bg-[#1a1a18]"
@@ -32,5 +33,7 @@ defineProps({
   columns: { type: Array, required: true },
   pageSizes: { type: Array, default: () => [100, 200, 500, 1000] },
   perPage: { type: Number, default: 100 },
+  /** Extra query params sent with every table request (e.g. filter by select value) */
+  queryParams: { type: Object, default: () => ({}) },
 });
 </script>

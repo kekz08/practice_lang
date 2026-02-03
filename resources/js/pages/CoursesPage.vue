@@ -1,16 +1,33 @@
 <template>
-  <DataTablePage
-    title="Courses"
-    subtitle="Courses table from database"
-    fetch-url="/api/courses"
-    :columns="courseColumns"
-    :page-sizes="[10, 25, 50, 100]"
-    :per-page="25"
-  />
+  <div class="space-y-6">
+    <FahadSelect search-route="/api/courses" @trigger-change="onCourseSelect" />
+    <DataTablePage
+      title="Courses"
+      subtitle="Courses table from database"
+      fetch-url="/api/courses"
+      :columns="courseColumns"
+      :page-sizes="[10, 25, 50, 100]"
+      :per-page="25"
+      :query-params="tableQueryParams"
+    />
+  </div>
 </template>
 
 <script setup>
+import { ref, computed } from 'vue';
 import DataTablePage from '../components/DataTablePage.vue';
+import FahadSelect from '../components/FahadSelect.vue';
+
+const selectedCourseId = ref(null);
+
+const onCourseSelect = (selected) => {
+  selectedCourseId.value = selected?.id ?? null;
+};
+
+const tableQueryParams = computed(() => {
+  if (selectedCourseId.value == null) return {};
+  return { CourseID: selectedCourseId.value };
+});
 
 const courseColumns = [
   { key: 'CourseID', label: 'ID', sortable: true, width: '80px' },

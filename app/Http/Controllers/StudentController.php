@@ -25,7 +25,12 @@ class StudentController extends Controller
             ->leftJoinSub($curriculumCampusSub, 'curriculum_campus', 'students.CurriculumID', '=', 'curriculum_campus.CurriculumID')
             ->select('students.*', 'curriculum_campus.campus_name', 'curriculum_campus.program_name');
 
-        if ($search = $request->input('search')) {
+        if ($request->filled('StudentID')) {
+            $query->where('students.StudentID', $request->input('StudentID'));
+        }
+
+        $search = $request->input('search') ?? $request->input('query_');
+        if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('students.StudentID', 'like', "%{$search}%")
                     ->orWhere('students.FirstName', 'like', "%{$search}%")
@@ -50,6 +55,17 @@ class StudentController extends Controller
                 default => 'students.' . $sort,
             };
             $query->orderBy($sortColumn, $order);
+        }
+
+        // fahad-select expects { results: [ { id, label } ] }
+        if ($request->has('query_')) {
+            $items = $query->limit(100)->get();
+            $results = $items->map(fn ($row) => [
+                'id' => $row->StudentID,
+                'label' => trim(($row->FirstName ?? '').' '.($row->LastName ?? '')),
+            ]);
+
+            return response()->json(['results' => $results]);
         }
 
         $perPage = (int) $request->input('per_page', 10);
