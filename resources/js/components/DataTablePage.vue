@@ -14,7 +14,11 @@
       odd-row-color="bg-white dark:bg-[#161615]"
       even-row-color="bg-stone-50 dark:bg-[#1a1a18]"
       hover-color="hover:bg-stone-200 dark:hover:bg-stone-700"
-    />
+    >
+      <template v-for="(_, name) in $slots" #[name]="slotData">
+        <slot :name="name" v-bind="slotData || {}" />
+      </template>
+    </SimpleTable>
   </div>
 </template>
 

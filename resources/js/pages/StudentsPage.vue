@@ -6,7 +6,17 @@
     :columns="studentColumns"
     :page-sizes="[10, 25, 50, 100]"
     :per-page="25"
-  />
+    >
+      <template #cell-status="{ row }">
+  <span
+      :class="statusClass(row.status)"
+      class="font-semibold capitalize"
+  >
+    {{ row.status }}
+  </span>
+      </template>
+
+  </DataTablePage>
 </template>
 
 <script setup>
@@ -22,9 +32,21 @@ const studentColumns = [
   { key: 'PhoneNumber', label: 'Phone', sortable: true, width: '120px' },
   { key: 'Gender', label: 'Gender', sortable: true, width: '90px' },
   { key: 'YearLevel', label: 'Year Level', sortable: true, width: '90px' },
-  { key: 'course_code', label: 'Course', sortable: true, width: '120px' },
+  { key: 'program_name', label: 'Program Name', sortable: true, width: '120px' },
   { key: 'campus_name', label: 'Campus', sortable: true, width: '140px' },
   { key: 'status', label: 'Status', sortable: true, width: '100px' },
   { key: 'created_at', label: 'Created', sortable: true, width: '160px' },
 ];
+
+const statusClass = (status) => {
+    status = status?.toLowerCase();
+    return {
+        active: 'text-green-500',
+        inactive: 'text-gray-500',
+        locked: 'text-red-600',
+        unlocked: 'text-green-600',
+        filled: 'text-red-500',
+        'pre-enroll': 'text-yellow-500',
+    }[status] || 'text-gray-400';
+};
 </script>

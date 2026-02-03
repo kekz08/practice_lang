@@ -12,18 +12,18 @@ class StudentController extends Controller
     public function index(Request $request)
     {
         $curriculumCampusSub = DB::table('classes')
-            ->join('courses', 'classes.CourseID', '=', 'courses.CourseID')
-            ->join('campus', 'courses.CampusID', '=', 'campus.CampusID')
+            ->join('programs', 'classes.ProgramID', '=', 'programs.ProgramID')
+            ->join('campus', 'programs.CampusID', '=', 'campus.CampusID')
             ->select(
                 'classes.CurriculumID',
                 DB::raw('MAX(campus.CampusName) as campus_name'),
-                DB::raw('MAX(courses.CourseCode) as course_code')
+                DB::raw('MAX(programs.ProgramName) as program_name')
             )
             ->groupBy('classes.CurriculumID');
 
         $query = Student::query()
             ->leftJoinSub($curriculumCampusSub, 'curriculum_campus', 'students.CurriculumID', '=', 'curriculum_campus.CurriculumID')
-            ->select('students.*', 'curriculum_campus.campus_name', 'curriculum_campus.course_code');
+            ->select('students.*', 'curriculum_campus.campus_name', 'curriculum_campus.program_name');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -37,7 +37,7 @@ class StudentController extends Controller
                     ->orWhere('students.Address', 'like', "%{$search}%")
                     ->orWhere('students.status', 'like', "%{$search}%")
                     ->orWhere('curriculum_campus.campus_name', 'like', "%{$search}%")
-                    ->orWhere('curriculum_campus.course_code', 'like', "%{$search}%");
+                    ->orWhere('curriculum_campus.program_name', 'like', "%{$search}%");
             });
         }
 
@@ -46,7 +46,7 @@ class StudentController extends Controller
         if (in_array(strtolower($order), ['asc', 'desc'])) {
             $sortColumn = match ($sort) {
                 'campus_name' => 'curriculum_campus.campus_name',
-                'course_code' => 'curriculum_campus.course_code',
+                'program_name' => 'curriculum_campus.program_name',
                 default => 'students.' . $sort,
             };
             $query->orderBy($sortColumn, $order);
