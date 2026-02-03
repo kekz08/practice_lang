@@ -28,6 +28,7 @@ class ProgramController extends Controller
         }
 
         $perPage = (int) $request->input('per_page', 10);
+        $perPage = min(max($perPage, 1), 1000);
 
         return response()->json($query->paginate($perPage));
     }
