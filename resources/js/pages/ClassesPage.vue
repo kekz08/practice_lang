@@ -2,24 +2,31 @@
   <div class="space-y-6">
     <FahadSelect
       search-route="/api/classes"
-      @trigger-change="onClassSelect"
+      @triggerChange="onClassSelect"
     />
-    <DataTablePage
-      title="Classes"
-      subtitle="Classes table from database"
+    <header class="mb-6">
+      <h1 class="text-2xl font-semibold">Classes</h1>
+      <p class="text-[#706f6c] dark:text-[#A1A09A] text-sm">Classes table from database</p>
+    </header>
+    <SimpleTable
       fetch-url="/api/classes"
       :columns="columns"
       :page-sizes="[100, 200, 500, 1000]"
       :per-page="100"
       :query-params="tableQueryParams"
+      searchable
+      odd-row-color="bg-white dark:bg-[#161615]"
+      even-row-color="bg-stone-50 dark:bg-[#1a1a18]"
+      hover-color="hover:bg-stone-200 dark:hover:bg-stone-700"
     />
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
-import DataTablePage from '../components/DataTablePage.vue';
-import FahadSelect from '../components/FahadSelect.vue';
+import FahadSelect from 'fahad-select';
+import 'fahad-select/dist/style.css';
+import SimpleTable from '@kikiloaw/simple-table';
 
 const selectedClassId = ref(null);
 

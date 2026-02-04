@@ -29,6 +29,25 @@ class StudentController extends Controller
             $query->where('students.StudentID', $request->input('StudentID'));
         }
 
+        if ($request->filled('ProgramID')) {
+            $query->whereExists(function ($q) use ($request) {
+                $q->select(DB::raw(1))
+                    ->from('classes')
+                    ->whereColumn('classes.CurriculumID', 'students.CurriculumID')
+                    ->where('classes.ProgramID', $request->input('ProgramID'));
+            });
+        }
+
+        if ($request->filled('CampusID')) {
+            $query->whereExists(function ($q) use ($request) {
+                $q->select(DB::raw(1))
+                    ->from('classes')
+                    ->join('programs', 'classes.ProgramID', '=', 'programs.ProgramID')
+                    ->whereColumn('classes.CurriculumID', 'students.CurriculumID')
+                    ->where('programs.CampusID', $request->input('CampusID'));
+            });
+        }
+
         $search = $request->input('search') ?? $request->input('query_');
         if ($search) {
             $query->where(function ($q) use ($search) {

@@ -21,7 +21,6 @@
 <script setup>
 import { ref, nextTick } from 'vue';
 import FormFormatter from 'form-formatter';
-import FormDataPreview from '../components/FormDataPreview.vue';
 
 // Parameters for selects (Basic Usage: parameters ref)
 const parameters = ref({});
