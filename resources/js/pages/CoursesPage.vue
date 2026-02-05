@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-semibold">Courses</h1>
       <p class="text-[#706f6c] dark:text-[#A1A09A] text-sm">Courses table from database</p>
     </header>
-    <SimpleTable
+    <SimpleTable ref="tableRef"
       fetch-url="/api/courses"
       :columns="courseColumns"
       :page-sizes="[10, 25, 50, 100]"
@@ -20,16 +20,21 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import FahadSelect from 'fahad-select';
 import 'fahad-select/dist/style.css';
 import SimpleTable from '@kikiloaw/simple-table';
 
+const tableRef = ref(null);
 const selectedCourseId = ref(null);
 
 const onCourseSelect = (selected) => {
   selectedCourseId.value = selected?.id ?? null;
 };
+
+watch ([selectedCourseId], () => {
+    tableRef.value.refresh?.();
+})
 
 const tableQueryParams = computed(() => {
   if (selectedCourseId.value == null) return {};

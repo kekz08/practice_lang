@@ -27,6 +27,10 @@ class CourseController extends Controller
             });
         }
 
+        if ($request-> has('CourseID')) {
+            $query->where('courses.CourseID', $request->input('CourseID'));
+        }
+
         $sort = $request->input('sort', 'CourseID');
         $order = $request->input('order', 'asc');
         if (in_array(strtolower($order), ['asc', 'desc'])) {

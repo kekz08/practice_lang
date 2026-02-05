@@ -30,6 +30,13 @@
           >
               Programs
           </router-link>
+          <router-link
+              to="/campus"
+              class="text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC] font-medium"
+              active-class="!text-[#1b1b18] dark:!text-[#EDEDEC]"
+          >
+              Campus
+          </router-link>
         <router-link
           to="/form"
           class="text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC] font-medium"

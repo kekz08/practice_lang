@@ -22,6 +22,10 @@ class CampusController extends Controller
             });
         }
 
+        if ($request->has('CampusID')) {
+            $query->where('CampusID', $request->input('CampusID'));
+        }
+
         $sort = $request->input('sort', 'CampusID');
         $order = $request->input('order', 'asc');
         if (in_array(strtolower($order), ['asc', 'desc'])) {
@@ -33,7 +37,7 @@ class CampusController extends Controller
             $items = $query->limit(100)->get();
             $results = $items->map(fn ($row) => [
                 'id' => $row->CampusID,
-                'label' => $row->CampusName,
+                'label' => trim(($row->CampusCode ?? '').' '.($row->CampusName ?? '')),
             ]);
 
             return response()->json(['results' => $results]);
