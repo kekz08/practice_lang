@@ -4,10 +4,10 @@
           <h1 class="text-2xl font-semibold">Students</h1>
           <p class="text-[#706f6c] dark:text-[#A1A09A] text-sm">Students table from database</p>
       </header>
-    <div class="flex flex-wrap items-end gap-4">
+    <div v-show="showFilters" class="flex flex-wrap items-end gap-4">
         <FahadSelect
             class="flex-1 min-w-[200px]"
-            placeholder="Search by Student ID"
+            placeholder="Search by Student"
             search-route="/api/students"
             @triggerChange="onStudentSelect" />
         <FahadSelect
@@ -25,8 +25,8 @@
       ref="tableRef"
       fetch-url="/api/students"
       :columns="studentColumns"
-      :page-sizes="[100, 200, 500, 1000]"
-      :per-page="100"
+      :page-sizes="[10, 20, 50, 100]"
+      :per-page="10"
       :query-params="tableQueryParams"
       selectable
       searchable
@@ -35,7 +35,7 @@
       hover-color="hover:bg-stone-200 dark:hover:bg-stone-700"
     >
         <template #actions="{ rows }">
-            <TableBatchActions :rows="rows" @export="handleExport" @bulk-delete="handleBulkDelete" />
+            <TableBatchActions :rows="rows" @export="handleExport" @bulk-delete="handleBulkDelete" @toggle-filters="showFilters = !showFilters" />
         </template>
         <template #cell-actions="{ row }">
             <TableActions
@@ -65,6 +65,7 @@ import TableBatchActions from '../components/TableBatchActions.vue';
 import TableActions from "@/components/TableActions.vue";
 
 const tableRef = ref(null);
+const showFilters = ref(false);
 const selectedStudentId = ref(null);
 const selectedProgramId = ref(null);
 const selectedCampusID = ref(null);

@@ -23,11 +23,18 @@
             <Trash class="mr-2 h-4 w-4" />
             Bulk Delete
         </button>
+
+        <button
+            @click="$emit('toggle-filters')"
+            class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white transition-colors bg-blue-500 border rounded-md shadow-sm border-stone-200 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2 dark:bg-[#161615] dark:border-stone-700 dark:hover:bg-stone-800 dark:text-[#EDEDEC]"
+        >
+            <Filter class="h-4 w-4" />
+        </button>
     </div>
 </template>
 
 <script setup>
-import { Download, Trash } from 'lucide-vue-next';
+import { Download, Trash, Filter } from 'lucide-vue-next';
 
 defineProps({
     rows: {
@@ -36,5 +43,5 @@ defineProps({
     }
 });
 
-defineEmits(['export', 'bulk-delete']);
+defineEmits(['export', 'bulk-delete', 'toggle-filters']);
 </script>

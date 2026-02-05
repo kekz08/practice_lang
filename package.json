@@ -21,6 +21,7 @@
         "@vueuse/core": "^12.0.0",
         "fahad-select": "^3.4.4",
         "form-formatter": "^1.0.7",
+        "lucide-vue-next": "^0.563.0",
         "vue": "^3.5.27",
         "vue-router": "^4.6.4"
     }
