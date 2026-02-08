@@ -1,7 +1,8 @@
 <template>
   <router-view />
+  <Toast />
 </template>
 
 <script setup>
-// Root app: router-view shows the current page (layout + page component)
+import Toast from './components/Toast.vue';
 </script>

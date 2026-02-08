@@ -91,4 +91,63 @@ class StudentController extends Controller
 
         return response()->json($query->paginate($perPage));
     }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'StudentYear' => 'nullable|integer',
+            'FirstName' => 'required|string|max:255',
+            'MiddleName' => 'nullable|string|max:255',
+            'LastName' => 'required|string|max:255',
+            'Email' => 'nullable|email',
+            'PhoneNumber' => 'nullable|string|max:50',
+            'Gender' => 'nullable|string|in:Male,Female,Other',
+            'BirthDate' => 'nullable|date',
+            'Address' => 'nullable|string',
+            'CurriculumID' => 'nullable|integer',
+            'YearLevel' => 'nullable|integer',
+            'status' => 'nullable|string|max:50',
+        ]);
+
+        if (! isset($validated['YearLevel']) || $validated['YearLevel'] === null) {
+            $validated['YearLevel'] = 0;
+        }
+
+        $student = Student::create($validated);
+        return response()->json($student, 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $student = Student::findOrFail($id);
+        $validated = $request->validate([
+            'StudentYear' => 'nullable|integer',
+            'FirstName' => 'required|string|max:255',
+            'MiddleName' => 'nullable|string|max:255',
+            'LastName' => 'required|string|max:255',
+            'Email' => 'nullable|email',
+            'PhoneNumber' => 'nullable|string|max:50',
+            'Gender' => 'nullable|string|in:Male,Female,Other',
+            'BirthDate' => 'nullable|date',
+            'Address' => 'nullable|string',
+            'CurriculumID' => 'nullable|integer',
+            'YearLevel' => 'nullable|integer',
+            'status' => 'nullable|string|max:50',
+        ]);
+
+        // YearLevel column is NOT NULL - use 0 when empty
+        if (! isset($validated['YearLevel']) || $validated['YearLevel'] === null) {
+            $validated['YearLevel'] = 0;
+        }
+
+        $student->update($validated);
+        return response()->json($student);
+    }
+
+    public function destroy($id)
+    {
+        $student = Student::findOrFail($id);
+        $student->delete();
+        return response()->json(null, 204);
+    }
 }
