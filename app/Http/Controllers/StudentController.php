@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Http\Requests\StoreStudentRequest;
+use App\Http\Requests\UpdateStudentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -92,55 +94,16 @@ class StudentController extends Controller
         return response()->json($query->paginate($perPage));
     }
 
-    public function store(Request $request)
+    public function store(StoreStudentRequest $request)
     {
-        $validated = $request->validate([
-            'StudentYear' => 'nullable|integer',
-            'FirstName' => 'required|string|max:255',
-            'MiddleName' => 'nullable|string|max:255',
-            'LastName' => 'required|string|max:255',
-            'Email' => 'nullable|email',
-            'PhoneNumber' => 'nullable|string|max:50',
-            'Gender' => 'nullable|string|in:Male,Female,Other',
-            'BirthDate' => 'nullable|date',
-            'Address' => 'nullable|string',
-            'CurriculumID' => 'nullable|integer',
-            'YearLevel' => 'nullable|integer',
-            'status' => 'nullable|string|max:50',
-        ]);
-
-        if (! isset($validated['YearLevel']) || $validated['YearLevel'] === null) {
-            $validated['YearLevel'] = 0;
-        }
-
-        $student = Student::create($validated);
+        $student = Student::create($request->validated());
         return response()->json($student, 201);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateStudentRequest $request, $id)
     {
         $student = Student::findOrFail($id);
-        $validated = $request->validate([
-            'StudentYear' => 'nullable|integer',
-            'FirstName' => 'required|string|max:255',
-            'MiddleName' => 'nullable|string|max:255',
-            'LastName' => 'required|string|max:255',
-            'Email' => 'nullable|email',
-            'PhoneNumber' => 'nullable|string|max:50',
-            'Gender' => 'nullable|string|in:Male,Female,Other',
-            'BirthDate' => 'nullable|date',
-            'Address' => 'nullable|string',
-            'CurriculumID' => 'nullable|integer',
-            'YearLevel' => 'nullable|integer',
-            'status' => 'nullable|string|max:50',
-        ]);
-
-        // YearLevel column is NOT NULL - use 0 when empty
-        if (! isset($validated['YearLevel']) || $validated['YearLevel'] === null) {
-            $validated['YearLevel'] = 0;
-        }
-
-        $student->update($validated);
+        $student->update($request->validated());
         return response()->json($student);
     }
 
