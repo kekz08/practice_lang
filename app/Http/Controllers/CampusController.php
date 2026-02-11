@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Campus;
+use App\Http\Requests\StoreCampusRequest;
+use App\Http\Requests\UpdateCampusRequest;
 use Illuminate\Http\Request;
 
 class CampusController extends Controller
@@ -48,36 +50,18 @@ class CampusController extends Controller
         return response()->json($query->paginate($perPage));
     }
 
-    public function store(Request $request)
+    public function store(StoreCampusRequest $request)
     {
-        $validated = $request->validate([
-            'CampusCode' => 'required|string|max:50|unique:campus,CampusCode',
-            'CampusName' => 'required|string|max:255',
-            'Location' => 'nullable|string|max:255',
-            'CampusHead' => 'nullable|integer',
-            'OfficeCode' => 'nullable|integer',
-            'status' => 'nullable|string|max:50',
-        ]);
-
-        $campus = Campus::create($validated);
+        $campus = Campus::create($request->validated());
 
         return response()->json($campus, 201);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateCampusRequest $request, $id)
     {
         $campus = Campus::findOrFail($id);
 
-        $validated = $request->validate([
-            'CampusCode' => 'required|string|max:50|unique:campus,CampusCode,'.$id.',CampusID',
-            'CampusName' => 'required|string|max:255',
-            'Location' => 'nullable|string|max:255',
-            'CampusHead' => 'nullable|integer',
-            'OfficeCode' => 'nullable|integer',
-            'status' => 'nullable|string|max:50',
-        ]);
-
-        $campus->update($validated);
+        $campus->update($request->validated());
 
         return response()->json($campus);
     }
