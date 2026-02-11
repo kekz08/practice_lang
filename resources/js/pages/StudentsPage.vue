@@ -84,7 +84,7 @@
                         </h2>
                         <button
                             @click="closeModal"
-                            class="p-1 rounded hover:bg-stone-100 dark:hover:bg-stone-800"
+                            class="p-1 rounded hover:bg-stone-100 dark:hovr:bg-stone-800"
                             aria-label="Close"
                         >
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

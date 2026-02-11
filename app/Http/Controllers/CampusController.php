@@ -47,4 +47,58 @@ class CampusController extends Controller
 
         return response()->json($query->paginate($perPage));
     }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'CampusCode' => 'required|string|max:50|unique:campus,CampusCode',
+            'CampusName' => 'required|string|max:255',
+            'Location' => 'nullable|string|max:255',
+            'CampusHead' => 'nullable|integer',
+            'OfficeCode' => 'nullable|integer',
+            'status' => 'nullable|string|max:50',
+        ]);
+
+        $campus = Campus::create($validated);
+
+        return response()->json($campus, 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $campus = Campus::findOrFail($id);
+
+        $validated = $request->validate([
+            'CampusCode' => 'required|string|max:50|unique:campus,CampusCode,'.$id.',CampusID',
+            'CampusName' => 'required|string|max:255',
+            'Location' => 'nullable|string|max:255',
+            'CampusHead' => 'nullable|integer',
+            'OfficeCode' => 'nullable|integer',
+            'status' => 'nullable|string|max:50',
+        ]);
+
+        $campus->update($validated);
+
+        return response()->json($campus);
+    }
+
+    public function destroy($id)
+    {
+        $campus = Campus::findOrFail($id);
+        $campus->delete();
+
+        return response()->json(null, 204);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (!is_array($ids) || empty($ids)) {
+            return response()->json(['message' => 'No IDs provided'], 400);
+        }
+
+        Campus::whereIn('CampusID', $ids)->delete();
+
+        return response()->json(null, 204);
+    }
 }
