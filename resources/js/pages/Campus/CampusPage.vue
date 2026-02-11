@@ -131,14 +131,14 @@
 <script setup>
 import {ref, computed, watch, nextTick} from 'vue';
 import axios from 'axios';
-import { useToast } from '../composables/useToast';
+import { useToast } from '../../composables/useToast';
 import FahadSelect from 'fahad-select';
 import 'fahad-select/dist/style.css';
 import FormFormatter from 'form-formatter';
 import SimpleTable from '@kikiloaw/simple-table';
 import TableActions from "@/components/TableActions.vue";
 import TableBatchActions from "@/components/TableBatchActions.vue";
-import ConfirmModal from '../components/ConfirmModal.vue';
+import ConfirmModal from '../../components/ConfirmModal.vue';
 
 const { show: showToast } = useToast();
 const tableRef = ref(null);

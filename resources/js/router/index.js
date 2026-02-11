@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import AppLayout from '../components/AppLayout.vue';
-import ClassesPage from '../pages/ClassesPage.vue';
-import CoursesPage from '../pages/CoursesPage.vue';
-import FormPage from '../pages/FormPage.vue';
-import ProgramsPage from '../pages/ProgramsPage.vue';
-import StudentsPage from '../pages/StudentsPage.vue';
-import CampusPage from "@/pages/CampusPage.vue";
+import ClassesPage from '../pages/Classes/ClassesPage.vue';
+import CoursesPage from '../pages/Courses/CoursesPage.vue';
+import FormPage from '../pages/Forms/FormPage.vue';
+import ProgramsPage from '../pages/Programs/ProgramsPage.vue';
+import StudentsPage from '../pages/Students/StudentsPage.vue';
+import CampusPage from "@/pages/Campus/CampusPage.vue";
 
 const routes = [
   {
