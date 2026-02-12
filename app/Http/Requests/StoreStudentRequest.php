@@ -34,6 +34,8 @@ class StoreStudentRequest extends FormRequest
             'CurriculumID' => 'nullable|integer',
             'YearLevel' => 'nullable|integer',
             'status' => 'nullable|string|max:50',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'nullable|string',
         ];
     }
 

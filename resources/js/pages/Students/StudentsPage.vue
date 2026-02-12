@@ -79,9 +79,14 @@
             >
                 <div class="relative w-full max-w-7xl mx-4 my-8 bg-white dark:bg-[#1a1a18] rounded-lg shadow-xl">
                     <div class="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-700">
-                        <h2 class="text-lg font-semibold">
-                            {{ isViewMode ? 'View Student' : isEditMode ? 'Edit Student' : 'Add Student' }}
-                        </h2>
+                        <div class="flex items-center gap-4">
+                            <div v-if="form.attachment_url" class="w-12 h-12 overflow-hidden rounded-full border border-stone-200 dark:border-stone-700">
+                                <img :src="form.attachment_url" alt="Student Attachment" class="w-full h-full object-cover" />
+                            </div>
+                            <h2 class="text-lg font-semibold">
+                                {{ isViewMode ? 'View Student' : isEditMode ? 'Edit Student' : 'Add Student' }}
+                            </h2>
+                        </div>
                         <button
                             @click="closeModal"
                             class="p-1 rounded hover:bg-stone-100 dark:hovr:bg-stone-800"
@@ -94,6 +99,11 @@
                     </div>
                     <form @submit.prevent="handleSubmit" class="p-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5.5 grid-auto-rows-[minmax(80px,_auto)]">
+                            <div v-if="isViewMode && form.attachment_url" class="md:col-span-2 flex justify-center mb-4">
+                                <div class="w-32 h-32 overflow-hidden rounded-lg border-2 border-stone-200 dark:border-stone-700 shadow-sm">
+                                    <img :src="form.attachment_url" alt="Student Attachment" class="w-full h-full object-cover" />
+                                </div>
+                            </div>
                             <FormFormatter
                                 :sampledata="formFieldsForDisplay"
                                 :form="form"
@@ -144,7 +154,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, reactive, computed, watch, nextTick } from 'vue';
 import axios from 'axios';
 import { useToast } from '../../composables/useToast';
 import FahadSelect from 'fahad-select';
@@ -180,7 +190,7 @@ const executeCallback = (callbackName) => {
     if (callbackName) console.log('Callback:', callbackName);
 };
 
-const form = ref({
+const form = reactive({
     StudentID: null,
     StudentYear: null,
     FirstName: '',
@@ -194,6 +204,8 @@ const form = ref({
     CurriculumID: null,
     YearLevel: null,
     status: null,
+    attachment1: [],
+    attachment_url: null,
 });
 
 const formFields = [
@@ -254,6 +266,15 @@ const formFields = [
         ],
         required: false,
     },
+    {
+        type: 'file',
+        model: 'attachment1',
+        label: 'Upload File',
+        placeholder: 'Choose a file',
+        multiple: true,
+        accept: '.jpg,.png,.xls,.xlsx',
+        required: true
+    },
 ];
 
 const deleteModalTitle = computed(() =>
@@ -277,7 +298,7 @@ const formFieldsForDisplay = computed(() =>
 );
 
 const resetForm = () => {
-    form.value = {
+    Object.assign(form, {
         StudentID: null,
         StudentYear: null,
         FirstName: '',
@@ -291,7 +312,9 @@ const resetForm = () => {
         CurriculumID: null,
         YearLevel: null,
         status: null,
-    };
+        attachment1: [],
+        attachment_url: null,
+    });
 };
 
 const openCreate = () => {
@@ -305,7 +328,7 @@ const openEdit = (row) => {
     const birthDate = row.BirthDate
         ? (typeof row.BirthDate === 'string' ? row.BirthDate.split('T')[0] : row.BirthDate)
         : null;
-    form.value = {
+    Object.assign(form, {
         StudentID: row.StudentID,
         StudentYear: row.StudentYear ?? null,
         FirstName: row.FirstName ?? '',
@@ -321,7 +344,9 @@ const openEdit = (row) => {
             : null,
         YearLevel: row.YearLevel ?? null,
         status: row.status ?? null,
-    };
+        attachment1: [],
+        attachment_url: row.attachment_url ?? null,
+    });
     isEditMode.value = true;
     isViewMode.value = false;
     modalOpen.value = true;
@@ -337,26 +362,47 @@ const closeModal = () => {
     modalOpen.value = false;
 };
 
+// No-op fileToBase64 as form-formatter already handles it
+const fileToBase64 = (file) => {
+    return Promise.resolve(file);
+};
+
 const handleSubmit = async () => {
     formSubmitting.value = true;
     try {
+        let base64Files = [];
+        if (form.attachment1 && form.attachment1.length > 0) {
+            base64Files = form.attachment1.map(fileObj => {
+                if (typeof fileObj === 'string') return fileObj;
+                if (fileObj && fileObj.content) return fileObj.content;
+                // Fallback for raw File objects if any
+                if (fileObj instanceof Blob) return null; // Should be handled async if needed, but form-formatter handles it
+                return null;
+            }).filter(Boolean);
+
+            // If we have Blobs that weren't converted (unlikely with form-formatter),
+            // we'd need to convert them here, but form-formatter does it on @change.
+        }
+
+        // Create a plain object for payload to avoid any Proxy issues with axios
         const payload = {
-            StudentYear: form.value.StudentYear,
-            FirstName: form.value.FirstName,
-            MiddleName: form.value.MiddleName || null,
-            LastName: form.value.LastName,
-            Email: form.value.Email || null,
-            PhoneNumber: form.value.PhoneNumber || null,
-            Gender: form.value.Gender || null,
-            BirthDate: form.value.BirthDate || null,
-            Address: form.value.Address || null,
-            CurriculumID: (form.value.CurriculumID?.id ?? form.value.CurriculumID) || null,
-            YearLevel: form.value.YearLevel || null,
-            status: form.value.status || null,
+            StudentYear: form.StudentYear,
+            FirstName: form.FirstName,
+            MiddleName: form.MiddleName || null,
+            LastName: form.LastName,
+            Email: form.Email || null,
+            PhoneNumber: form.PhoneNumber || null,
+            Gender: form.Gender || null,
+            BirthDate: form.BirthDate || null,
+            Address: form.Address || null,
+            CurriculumID: (form.CurriculumID?.id ?? form.CurriculumID) || null,
+            YearLevel: form.YearLevel || null,
+            status: form.status || null,
+            attachments: base64Files,
         };
 
-        if (isEditMode.value && form.value.StudentID) {
-            await axios.put(`/api/students/${form.value.StudentID}`, payload);
+        if (isEditMode.value && form.StudentID) {
+            await axios.put(`/api/students/${form.StudentID}`, payload);
             showToast('Student updated successfully');
         } else {
             await axios.post('/api/students', payload);
@@ -368,7 +414,7 @@ const handleSubmit = async () => {
         console.error('Save failed:', error);
         const msg = error.response?.data?.message || error.response?.data?.errors
             ? Object.values(error.response.data.errors || {}).flat().join(', ')
-            : 'Failed to save student';
+            : (error instanceof TypeError ? error.message : 'Failed to save student');
         showToast(msg);
     } finally {
         formSubmitting.value = false;
