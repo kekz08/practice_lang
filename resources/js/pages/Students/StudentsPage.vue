@@ -78,10 +78,10 @@
                 @click.self="closeModal"
             >
                 <div class="relative w-full max-w-7xl mx-4 my-8 bg-white dark:bg-[#1a1a18] rounded-lg shadow-xl">
-                    <div class="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-700">
+                        <div class="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-700">
                         <div class="flex items-center gap-4">
-                            <div v-if="form.attachment_url" class="w-12 h-12 overflow-hidden rounded-full border border-stone-200 dark:border-stone-700">
-                                <img :src="form.attachment_url" alt="Student Attachment" class="w-full h-full object-cover" />
+                            <div v-if="form.avatar_url" class="w-12 h-12 overflow-hidden rounded-full border border-stone-200 dark:border-stone-700">
+                                <img :src="form.avatar_url" alt="Student Avatar" class="w-full h-full object-cover" />
                             </div>
                             <h2 class="text-lg font-semibold">
                                 {{ isViewMode ? 'View Student' : isEditMode ? 'Edit Student' : 'Add Student' }}
@@ -99,9 +99,34 @@
                     </div>
                     <form @submit.prevent="handleSubmit" class="p-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5.5 grid-auto-rows-[minmax(80px,_auto)]">
-                            <div v-if="isViewMode && form.attachment_url" class="md:col-span-2 flex justify-center mb-4">
-                                <div class="w-32 h-32 overflow-hidden rounded-lg border-2 border-stone-200 dark:border-stone-700 shadow-sm">
-                                    <img :src="form.attachment_url" alt="Student Attachment" class="w-full h-full object-cover" />
+                            <div v-if="isViewMode" class="md:col-span-2 space-y-4">
+                                <!-- Avatar Preview -->
+                                <div v-if="form.avatar_url" class="flex justify-center mb-4">
+                                    <div class="w-32 h-32 overflow-hidden rounded-lg border-2 border-stone-200 dark:border-stone-700 shadow-sm flex items-center justify-center bg-stone-50 dark:bg-stone-800">
+                                        <img
+                                            :src="form.avatar_url"
+                                            alt="Student Avatar"
+                                            class="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                </div>
+
+                                <!-- Attachments List -->
+                                <div v-if="form.attachment_urls && form.attachment_urls.length > 0" class="border rounded-lg p-4 bg-stone-50 dark:bg-stone-800/50">
+                                    <h3 class="text-sm font-semibold mb-3">Attachments</h3>
+                                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                        <div v-for="(url, idx) in form.attachment_urls" :key="idx" class="flex flex-col items-center">
+                                            <div class="w-20 h-20 overflow-hidden rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 flex items-center justify-center">
+                                                <img v-if="isImage(url)" :src="url" class="w-full h-full object-cover" />
+                                                <svg v-else class="w-10 h-10 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </div>
+                                            <a :href="url" target="_blank" class="text-[10px] text-blue-600 hover:underline mt-1 text-center line-clamp-1">
+                                                {{ url.split('/').pop().split('?')[0] }}
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <FormFormatter
@@ -204,8 +229,10 @@ const form = reactive({
     CurriculumID: null,
     YearLevel: null,
     status: null,
-    attachment1: [],
-    attachment_url: null,
+    avatar: [],
+    avatar_url: null,
+    attachments: [],
+    attachment_urls: [],
 });
 
 const formFields = [
@@ -266,15 +293,26 @@ const formFields = [
         ],
         required: false,
     },
-    {
-        type: 'file',
-        model: 'attachment1',
-        label: 'Upload File',
-        placeholder: 'Choose a file',
-        multiple: true,
-        accept: '.jpg,.png,.xls,.xlsx',
-        required: true
-    },
+    [
+        {
+            type: 'file',
+            model: 'avatar',
+            label: 'Profile Picture',
+            placeholder: 'Choose avatar',
+            multiple: false,
+            accept: '.jpg,.png,.jpeg',
+            required: false
+        },
+        {
+            type: 'file',
+            model: 'attachments',
+            label: 'Documents',
+            placeholder: 'Choose files',
+            multiple: true,
+            accept: '.jpg,.png,.jpeg,.pdf,.doc,.docx,.xls,.xlsx,.txt',
+            required: false
+        },
+    ],
 ];
 
 const deleteModalTitle = computed(() =>
@@ -291,10 +329,15 @@ const deleteModalMessage = computed(() => {
 });
 
 const formFieldsForDisplay = computed(() =>
-    formFields.map((field) => ({
-        ...field,
-        disabled: isViewMode.value,
-    }))
+    formFields.map((field) => {
+        if (Array.isArray(field)) {
+            return field.map(f => ({ ...f, disabled: isViewMode.value }));
+        }
+        return {
+            ...field,
+            disabled: isViewMode.value,
+        };
+    })
 );
 
 const resetForm = () => {
@@ -312,8 +355,10 @@ const resetForm = () => {
         CurriculumID: null,
         YearLevel: null,
         status: null,
-        attachment1: [],
-        attachment_url: null,
+        avatar: [],
+        avatar_url: null,
+        attachments: [],
+        attachment_urls: [],
     });
 };
 
@@ -344,8 +389,10 @@ const openEdit = (row) => {
             : null,
         YearLevel: row.YearLevel ?? null,
         status: row.status ?? null,
-        attachment1: [],
-        attachment_url: row.attachment_url ?? null,
+        avatar: [],
+        avatar_url: row.avatar_url ?? null,
+        attachments: [],
+        attachment_urls: row.attachment_urls ?? [],
     });
     isEditMode.value = true;
     isViewMode.value = false;
@@ -370,21 +417,18 @@ const fileToBase64 = (file) => {
 const handleSubmit = async () => {
     formSubmitting.value = true;
     try {
-        let base64Files = [];
-        if (form.attachment1 && form.attachment1.length > 0) {
-            base64Files = form.attachment1.map(fileObj => {
+        const extractBase64 = (files) => {
+            if (!files || files.length === 0) return [];
+            return files.map(fileObj => {
                 if (typeof fileObj === 'string') return fileObj;
                 if (fileObj && fileObj.content) return fileObj.content;
-                // Fallback for raw File objects if any
-                if (fileObj instanceof Blob) return null; // Should be handled async if needed, but form-formatter handles it
                 return null;
             }).filter(Boolean);
+        };
 
-            // If we have Blobs that weren't converted (unlikely with form-formatter),
-            // we'd need to convert them here, but form-formatter does it on @change.
-        }
+        const avatarBase64 = extractBase64(form.avatar);
+        const attachmentsBase64 = extractBase64(form.attachments);
 
-        // Create a plain object for payload to avoid any Proxy issues with axios
         const payload = {
             StudentYear: form.StudentYear,
             FirstName: form.FirstName,
@@ -398,7 +442,8 @@ const handleSubmit = async () => {
             CurriculumID: (form.CurriculumID?.id ?? form.CurriculumID) || null,
             YearLevel: form.YearLevel || null,
             status: form.status || null,
-            attachments: base64Files,
+            avatar: avatarBase64[0] || null,
+            attachments: attachmentsBase64,
         };
 
         if (isEditMode.value && form.StudentID) {
@@ -415,7 +460,7 @@ const handleSubmit = async () => {
         const msg = error.response?.data?.message || error.response?.data?.errors
             ? Object.values(error.response.data.errors || {}).flat().join(', ')
             : (error instanceof TypeError ? error.message : 'Failed to save student');
-        showToast(msg);
+        showToast(msg, 'error');
     } finally {
         formSubmitting.value = false;
     }
@@ -539,5 +584,15 @@ const handleDelete = (row) => {
 
 const handleView = (row) => {
     openView(row);
+};
+
+const isImage = (url) => {
+    if (!url) return false;
+    // Handle both direct filenames and route URLs
+    const parts = url.split('/');
+    const filenameWithQuery = parts[parts.length - 1];
+    const filename = filenameWithQuery.split('?')[0];
+    const extension = filename.split('.').pop().toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension);
 };
 </script>

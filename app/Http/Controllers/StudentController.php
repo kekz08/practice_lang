@@ -7,6 +7,7 @@ use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateStudentRequest;
 use App\Services\StudentService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class StudentController extends Controller
 {
@@ -53,5 +54,19 @@ class StudentController extends Controller
         $this->studentService->deleteStudent($id);
 
         return response()->json(null, 204);
+    }
+
+    public function serveFile($id, $type, $filename)
+    {
+        $path = "attachments/students/{$id}/{$type}/{$filename}";
+
+        if (!Storage::disk('local')->exists($path)) {
+            abort(404);
+        }
+
+        // Optional: Add authorization check here
+        // e.g., if (auth()->user()->cannot('view', Student::find($id))) abort(403);
+
+        return response()->file(Storage::disk('local')->path($path));
     }
 }

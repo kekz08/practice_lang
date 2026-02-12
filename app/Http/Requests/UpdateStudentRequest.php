@@ -36,6 +36,7 @@ class UpdateStudentRequest extends FormRequest
             'status' => 'nullable|string|max:50',
             'attachments' => 'nullable|array',
             'attachments.*' => 'nullable|string',
+            'avatar' => 'nullable|string',
         ];
     }
 

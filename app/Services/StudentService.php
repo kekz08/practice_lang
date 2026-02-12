@@ -80,13 +80,24 @@ class StudentService
         $students = $query->paginate($request->input('per_page', 10));
 
         $students->getCollection()->transform(function ($student) {
-            $directory = "attachments/students/{$student->StudentID}";
-            $files = Storage::disk('public')->files($directory);
+            $baseDir = "attachments/students/{$student->StudentID}";
 
-            $student->attachment_url = null;
-            if (!empty($files)) {
-                $student->attachment_url = asset('storage/' . $files[0]);
-            }
+            // Handle Avatar
+            $avatarFiles = Storage::disk('local')->files("{$baseDir}/avatar");
+            $student->avatar_url = !empty($avatarFiles) ? route('students.file', [
+                'id' => $student->StudentID,
+                'type' => 'avatar',
+                'filename' => basename($avatarFiles[0])
+            ]) : null;
+
+            // Handle Attachments
+            $docFiles = Storage::disk('local')->files("{$baseDir}/docs");
+            $student->attachment_urls = array_map(fn($file) => route('students.file', [
+                'id' => $student->StudentID,
+                'type' => 'docs',
+                'filename' => basename($file)
+            ]), $docFiles);
+
             return $student;
         });
 
@@ -95,16 +106,22 @@ class StudentService
 
     public function createStudent(array $data)
     {
+        $avatar = $data['avatar'] ?? null;
         $attachments = $data['attachments'] ?? [];
-        unset($data['attachments']);
+        unset($data['avatar'], $data['attachments']);
 
         $student = Student::create($data);
 
-        // Ensure the student's attachment directory exists
-        Storage::disk('public')->makeDirectory("attachments/students/{$student->StudentID}");
+        // Handling path diri dapit
+        Storage::disk('local')->makeDirectory("attachments/students/{$student->StudentID}/avatar");
+        Storage::disk('local')->makeDirectory("attachments/students/{$student->StudentID}/docs");
+
+        if ($avatar) {
+            $this->handleAttachments($student, [$avatar], 'avatar', true);
+        }
 
         if (!empty($attachments)) {
-            $this->handleAttachments($student, $attachments);
+            $this->handleAttachments($student, $attachments, 'docs', false);
         }
 
         return $student;
@@ -113,15 +130,22 @@ class StudentService
     public function updateStudent($id, array $data)
     {
         $student = Student::findOrFail($id);
+        $avatar = $data['avatar'] ?? null;
         $attachments = $data['attachments'] ?? [];
-        unset($data['attachments']);
+        unset($data['avatar'], $data['attachments']);
 
         $student->update($data);
 
-        Storage::disk('public')->makeDirectory("attachments/students/{$student->StudentID}");
+        // Handling path diri dapit
+        Storage::disk('local')->makeDirectory("attachments/students/{$student->StudentID}/avatar");
+        Storage::disk('local')->makeDirectory("attachments/students/{$student->StudentID}/docs");
+
+        if ($avatar) {
+            $this->handleAttachments($student, [$avatar], 'avatar', true);
+        }
 
         if (!empty($attachments)) {
-            $this->handleAttachments($student, $attachments);
+            $this->handleAttachments($student, $attachments, 'docs', false);
         }
 
         return $student;
@@ -130,12 +154,28 @@ class StudentService
     public function deleteStudent($id)
     {
         $student = Student::findOrFail($id);
+
+        // Clean up attachments directory
+        $baseDir = "attachments/students/{$student->StudentID}";
+        if (Storage::disk('local')->exists($baseDir)) {
+            Storage::disk('local')->deleteDirectory($baseDir);
+        }
+
         return $student->delete();
     }
 
-    protected function handleAttachments(Student $student, array $attachments)
+    protected function handleAttachments(Student $student, array $attachments, string $subfolder = '', bool $overwrite = false)
     {
-        foreach ($attachments as $base64Data) {
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'];
+        $basePath = "attachments/students/{$student->StudentID}" . ($subfolder ? "/{$subfolder}" : "");
+
+        if ($overwrite && $subfolder) {
+            // Remove existing files in that specific subfolder to ensure "overwrite" behavior
+            Storage::disk('local')->deleteDirectory($basePath);
+            Storage::disk('local')->makeDirectory($basePath);
+        }
+
+        foreach ($attachments as $index => $base64Data) {
             if (empty($base64Data)) continue;
 
             if (preg_match('/^data:(\w+\/[\w\.\-]+);base64,/', $base64Data, $type)) {
@@ -143,18 +183,37 @@ class StudentService
                 $mimeType = $type[1]; // e.g. "image/png"
                 $extension = explode('/', $mimeType)[1];
                 $extension = explode('+', $extension)[0];
+
+                // Common fixes for extensions
+                $extension = match($extension) {
+                    'plain' => 'txt',
+                    'vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
+                    'vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx',
+                    'msword' => 'doc',
+                    'vnd.ms-excel' => 'xls',
+                    default => $extension
+                };
             } else {
                 $data = $base64Data;
                 $extension = 'bin';
             }
 
+            if (!in_array(strtolower($extension), $allowedExtensions) && $extension !== 'bin') {
+                continue;
+            }
+
             $data = base64_decode($data);
             if ($data === false) continue;
 
-            $filename = $student->StudentID . '.' . $extension;
-            $path = "attachments/students/{$student->StudentID}/{$filename}";
+            // Use StudentID for avatar to overwrite, or random/indexed for docs
+            if ($subfolder === 'avatar') {
+                $filename = "avatar.{$extension}";
+            } else {
+                $filename = time() . "_{$index}.{$extension}";
+            }
 
-            Storage::disk('public')->put($path, $data);
+            $path = "{$basePath}/{$filename}";
+            Storage::disk('local')->put($path, $data);
         }
     }
 }
