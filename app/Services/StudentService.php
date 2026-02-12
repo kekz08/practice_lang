@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 class StudentService
 {
-    public function getStudents(Request $request)
+    public function getStudents(Request $request): \Illuminate\Pagination\LengthAwarePaginator
     {
         $curriculumCampusSub = DB::table('classes')
             ->join('programs', 'classes.ProgramID', '=', 'programs.ProgramID')
@@ -112,19 +112,7 @@ class StudentService
 
         $student = Student::create($data);
 
-        // Handling path diri dapit
-        Storage::disk('local')->makeDirectory("attachments/students/{$student->StudentID}/avatar");
-        Storage::disk('local')->makeDirectory("attachments/students/{$student->StudentID}/docs");
-
-        if ($avatar) {
-            $this->handleAttachments($student, [$avatar], 'avatar', true);
-        }
-
-        if (!empty($attachments)) {
-            $this->handleAttachments($student, $attachments, 'docs', false);
-        }
-
-        return $student;
+        return $this->handlingPathDirectory($student, $avatar, $attachments);
     }
 
     public function updateStudent($id, array $data)
@@ -136,19 +124,7 @@ class StudentService
 
         $student->update($data);
 
-        // Handling path diri dapit
-        Storage::disk('local')->makeDirectory("attachments/students/{$student->StudentID}/avatar");
-        Storage::disk('local')->makeDirectory("attachments/students/{$student->StudentID}/docs");
-
-        if ($avatar) {
-            $this->handleAttachments($student, [$avatar], 'avatar', true);
-        }
-
-        if (!empty($attachments)) {
-            $this->handleAttachments($student, $attachments, 'docs', false);
-        }
-
-        return $student;
+        return $this->handlingPathDirectory($student, $avatar, $attachments);
     }
 
     public function deleteStudent($id)
@@ -164,7 +140,7 @@ class StudentService
         return $student->delete();
     }
 
-    protected function handleAttachments(Student $student, array $attachments, string $subfolder = '', bool $overwrite = false)
+    protected function handleAttachments(Student $student, array $attachments, string $subfolder = '', bool $overwrite = false): void
     {
         $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'];
         $basePath = "attachments/students/{$student->StudentID}" . ($subfolder ? "/{$subfolder}" : "");
@@ -215,5 +191,27 @@ class StudentService
             $path = "{$basePath}/{$filename}";
             Storage::disk('local')->put($path, $data);
         }
+    }
+
+    /**
+     * @param $student
+     * @param mixed $avatar
+     * @param mixed $attachments
+     * @return mixed
+     */
+    public function handlingPathDirectory($student, mixed $avatar, mixed $attachments): mixed
+    {
+        Storage::disk('local')->makeDirectory("attachments/students/{$student->StudentID}/avatar");
+        Storage::disk('local')->makeDirectory("attachments/students/{$student->StudentID}/docs");
+
+        if ($avatar) {
+            $this->handleAttachments($student, [$avatar], 'avatar', true);
+        }
+
+        if (!empty($attachments)) {
+            $this->handleAttachments($student, $attachments, 'docs', false);
+        }
+
+        return $student;
     }
 }

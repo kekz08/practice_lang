@@ -56,7 +56,7 @@ class StudentController extends Controller
         return response()->json(null, 204);
     }
 
-    public function serveFile($id, $type, $filename)
+    public function serveFile(Request $request, $id, $type, $filename)
     {
         $path = "attachments/students/{$id}/{$type}/{$filename}";
 
@@ -64,8 +64,11 @@ class StudentController extends Controller
             abort(404);
         }
 
-        // Optional: Add authorization check here
-        // e.g., if (auth()->user()->cannot('view', Student::find($id))) abort(403);
+        $student = Student::findOrFail($id);
+
+        if ($request->user() && $request->user()->cannot('view', $student)) {
+            abort(403);
+        }
 
         return response()->file(Storage::disk('local')->path($path));
     }

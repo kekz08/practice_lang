@@ -74,4 +74,9 @@ class Student extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public static function findOrFail($id)
+    {
+        return static::where('StudentID', $id)->firstOrFail();
+    }
 }
